@@ -1,5 +1,33 @@
 <?php
 
+//conexion: server, user, password, database
+
+$mysqli = mysqli_connect("localhost", "root", "", "imc");
+
+//chequear conexion
+
+if (!$mysqli){
+  echo "Error al conectar a Maria DB";
+  die();
+}
+
+//traer datos estadisticos desde bd
+
+$estadisticas = "SELECT AVG(`datos_imc`) AS 'imc', AVG (`datos_peso`) AS 'peso', AVG (`datos_altura`) AS 'altura', COUNT(*) AS 'total' FROM `datos` WHERE 1";
+$consulta = $mysqli->query($estadisticas);
+$fila = $consulta->fetch_assoc();
+
+$imc_promedio = bcdiv($fila['imc'], '1', 2);
+$peso_promedio = bcdiv($fila['peso'], '1', 2);
+$altura_promedio = bcdiv($fila['altura'], '1', 2);
+$cantidad = bcdiv($fila['total'], '1', 0);
+
+//traer tabla entera desde bd
+
+$consulta = $mysqli->query("SELECT * FROM `datos`");
+$tabla = $consulta->fetch_all(MYSQLI_ASSOC);
+
+//preparo variables
 
 $resultado = "";
 $color = "";
@@ -34,6 +62,8 @@ if (isset($_POST['peso']) && isset($_POST['altura']) && is_numeric($_POST['peso'
         $resultado = "Obesidad";
         $color = "red";
     }
+    $mysqli->query("INSERT INTO `datos`(`datos_altura`, `datos_peso`, `datos_imc`, `datos_mensaje`) VALUES ('".$altura."', '".$peso."', '".$imc."', '".$resultado."');");
+    
 }
 
 ?>
@@ -73,10 +103,13 @@ if (isset($_POST['peso']) && isset($_POST['altura']) && is_numeric($_POST['peso'
             <a class="nav-link js-scroll-trigger" href="#calcular">Calcular!</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link js-scroll-trigger" href="#informacion">Informacion</a>
+            <a class="nav-link js-scroll-trigger" href="#estadisticas">Estadisticas</a>
           </li>
           <li class="nav-item">
             <a class="nav-link js-scroll-trigger" href="#referencia">Tabla de Referencia</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#registros">Registros</a>
           </li>
         </ul>
       </div>
@@ -86,18 +119,18 @@ if (isset($_POST['peso']) && isset($_POST['altura']) && is_numeric($_POST['peso'
   <header class="bg-primary text-white">
     <div class="container text-center">
       <h1>Calcula tu indice de masa corporal</h1>
-      <p class="lead">Utiliza de manera sencilla esta calculadora y obten resultados inmediatos</p>
+      <p class="lead">Utiliza de manera sencilla esta calculadora y obten información inmediata</p>
     </div>
   </header>
 
   <section id="calcular">
     <div class="container">
       <div class="row">
-        <div class="col-lg-6 mx-auto">
+        <div class="col-lg-8 mx-auto">
           <h2>Calcula tu IMC</h2>
           <p class="lead">Ingresa tu peso en kgs y tu altura en mts:</p>
           
-          <form class = "" action = "index.php" method = "post">
+          <form class = "" action = "index.php#calcular" method = "post">
     Peso (En kg) <br><input type = "number" step = ".01" name = "peso" value = "" placeholder = "Ingresa tu peso en kg" required><br><br>
     Altura (En mt) <br><input type = "number" step = ".01" name = "altura" value = "" placeholder = "Ingresa tu altura en mt" required><br><br>
     <input type = "submit" name = "" value = "Calcular">
@@ -112,12 +145,18 @@ if (isset($_POST['peso']) && isset($_POST['altura']) && is_numeric($_POST['peso'
     </div>
   </section>
 
-  <section id="informacion" class="bg-light">
+  <section id="estadisticas" class="bg-light">
     <div class="container">
       <div class="row">
         <div class="col-lg-8 mx-auto">
-          <h2>Informacion</h2>
-          <p class="lead">El sobrepeso puede causar la elevación de la concentración de colesterol total y de la presión arterial, y aumentar el riesgo de sufrir la enfermedad arterial coronaria. La obesidad aumenta las probabilidades de que se presenten otros factores de riesgo cardiovascular, en especial, presión arterial alta, colesterol elevado y diabetes.</p>
+          <h2>Estadisticas</h2>
+          <div style="margin-top:20px" class="">
+          <b style="color:grey;">IMC Promedio: </b> <?= $imc_promedio; ?><br>
+          <b style="color:grey;">Altura Promedio: </b> <?= $altura_promedio; ?><br>
+          <b style="color:grey;">Peso Promedio: </b> <?= $peso_promedio; ?><br>
+          <b style="color:grey;">Cantidad: </b> <?= $cantidad; ?><br>
+
+
         </div>
       </div>
     </div>
@@ -153,6 +192,44 @@ if (isset($_POST['peso']) && isset($_POST['altura']) && is_numeric($_POST['peso'
               </tr>
             </tbody>
           </table>        
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="registros" class="bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <h2>Registros</h2>
+          <div style="margin-top:20px" class="">
+            <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#ID</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Altura</th>
+        <th scope="col">Peso</th>
+        <th scope="col">IMC</th>
+        <th scope="col">Mensaje</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($tabla as $fila) { ?>
+    
+      
+        <tr>
+          <th scope="row"><?php echo $fila['datos_id']; ?></th>
+          <td><?php echo $fila['datos_fecha']; ?></td>
+          <td><?php echo $fila['datos_altura']; ?></td>
+          <td><?php echo $fila['datos_peso']; ?></td>
+          <td><?php echo $fila['datos_imc']; ?></td>
+          <td><?php echo $fila['datos_mensaje']; ?></td>
+        </tr>
+        <?php } ?>
+    </tbody>
+  </table>
+
+
         </div>
       </div>
     </div>
