@@ -26,3 +26,7 @@ _Recursos utilizados_
 [Indice de Masa Corporal](https://es.wikipedia.org/wiki/%C3%8Dndice_de_masa_corporal)
 [Bootstrap](https://es.wikipedia.org/wiki/Bootstrap_(framework))
 
+## Host 🌐
+
+[Calculadora IMC](http://calculadoraimc.eshost.com.ar/)
+
